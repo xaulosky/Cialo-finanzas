@@ -18,6 +18,16 @@ import FacturasVenta from './pages/FacturasVenta/FacturasVenta'
 import Reportes from './pages/Reportes/Reportes'
 import Configuracion from './pages/Configuracion/Configuracion'
 
+// Nuevas páginas
+import Departamentos from './pages/Departamentos/Departamentos'
+import Cargos from './pages/Cargos/Cargos'
+import Vacaciones from './pages/Vacaciones/Vacaciones'
+import Licencias from './pages/Licencias/Licencias'
+import ConceptosNomina from './pages/ConceptosNomina/ConceptosNomina'
+import CentrosCosto from './pages/CentrosCosto/CentrosCosto'
+import Proyectos from './pages/Proyectos/Proyectos'
+import Presupuestos from './pages/Presupuestos/Presupuestos'
+
 function App() {
   return (
     <AuthProvider>
@@ -47,6 +57,15 @@ function App() {
             <Route path="facturas-venta" element={<FacturasVenta />} />
             <Route path="reportes" element={<Reportes />} />
             <Route path="configuracion" element={<Configuracion />} />
+            {/* Nuevas rutas */}
+            <Route path="departamentos" element={<Departamentos />} />
+            <Route path="cargos" element={<Cargos />} />
+            <Route path="vacaciones" element={<Vacaciones />} />
+            <Route path="licencias" element={<Licencias />} />
+            <Route path="conceptos-nomina" element={<ConceptosNomina />} />
+            <Route path="centros-costo" element={<CentrosCosto />} />
+            <Route path="proyectos" element={<Proyectos />} />
+            <Route path="presupuestos" element={<Presupuestos />} />
           </Route>
         </Routes>
       </BrowserRouter>

@@ -427,16 +427,20 @@ export const clienteService = {
 // =====================================================
 
 export const trabajadorService = {
-    async getTrabajadores() {
-        const { data, error } = await supabase
+    async getTrabajadores(incluirInactivos = false) {
+        let query = supabase
             .from('trabajadores')
             .select(`
-        *,
-        departamento:departamentos(id, nombre),
-        cargo:cargos(id, nombre)
-      `)
-            .neq('estado', 'desvinculado')
-            .order('apellido_paterno')
+                *,
+                departamento:departamentos!trabajadores_departamento_id_fkey(id, nombre),
+                cargo:cargos(id, nombre)
+            `)
+
+        if (!incluirInactivos) {
+            query = query.or('estado.is.null,estado.neq.desvinculado')
+        }
+
+        const { data, error } = await query.order('apellido_paterno')
         return { data: data || [], error }
     },
 
@@ -444,10 +448,10 @@ export const trabajadorService = {
         const { data, error } = await supabase
             .from('trabajadores')
             .select(`
-        *,
-        departamento:departamentos(*),
-        cargo:cargos(*)
-      `)
+                *,
+                departamento:departamentos!trabajadores_departamento_id_fkey(*),
+                cargo:cargos(*)
+            `)
             .eq('id', id)
             .single()
         return { data, error }
@@ -591,9 +595,9 @@ export const facturaVentaService = {
         let query = supabase
             .from('facturas_venta')
             .select(`
-        *,
-        cliente:clientes(id, nombre, rut)
-      `)
+                *,
+                cliente:clientes(id, nombre, rut)
+            `)
             .order('fecha_emision', { ascending: false })
 
         if (filters.cliente_id) query = query.eq('cliente_id', filters.cliente_id)
@@ -617,3 +621,354 @@ export const facturaVentaService = {
         return { data, error }
     }
 }
+
+// =====================================================
+// SERVICIO DE DEPARTAMENTOS
+// =====================================================
+
+export const departamentoService = {
+    async getDepartamentos() {
+        const { data, error } = await supabase
+            .from('departamentos')
+            .select(`
+                *,
+                jefe:trabajadores!departamentos_jefe_id_fkey(id, nombre, apellido_paterno)
+            `)
+            .order('nombre')
+        return { data: data || [], error }
+    },
+
+    async createDepartamento(departamento) {
+        const empresaId = await getEmpresaId()
+        const { data, error } = await supabase
+            .from('departamentos')
+            .insert({ ...departamento, empresa_id: empresaId })
+            .select()
+            .single()
+        return { data, error }
+    },
+
+    async updateDepartamento(id, updates) {
+        const { data, error } = await supabase
+            .from('departamentos')
+            .update(updates)
+            .eq('id', id)
+            .select()
+            .single()
+        return { data, error }
+    },
+
+    async deleteDepartamento(id) {
+        const { error } = await supabase
+            .from('departamentos')
+            .delete()
+            .eq('id', id)
+        return { error }
+    }
+}
+
+// =====================================================
+// SERVICIO DE CARGOS
+// =====================================================
+
+export const cargoService = {
+    async getCargos() {
+        const { data, error } = await supabase
+            .from('cargos')
+            .select(`
+                *,
+                departamento:departamentos(id, nombre)
+            `)
+            .order('nombre')
+        return { data: data || [], error }
+    },
+
+    async createCargo(cargo) {
+        const empresaId = await getEmpresaId()
+        const { data, error } = await supabase
+            .from('cargos')
+            .insert({ ...cargo, empresa_id: empresaId })
+            .select()
+            .single()
+        return { data, error }
+    },
+
+    async updateCargo(id, updates) {
+        const { data, error } = await supabase
+            .from('cargos')
+            .update(updates)
+            .eq('id', id)
+            .select()
+            .single()
+        return { data, error }
+    },
+
+    async deleteCargo(id) {
+        const { error } = await supabase
+            .from('cargos')
+            .delete()
+            .eq('id', id)
+        return { error }
+    }
+}
+
+// =====================================================
+// SERVICIO DE VACACIONES
+// =====================================================
+
+export const vacacionService = {
+    async getVacaciones(filters = {}) {
+        let query = supabase
+            .from('vacaciones')
+            .select(`
+                *,
+                trabajador:trabajadores(id, nombre, apellido_paterno, rut)
+            `)
+            .order('fecha_inicio', { ascending: false })
+
+        if (filters.trabajador_id) query = query.eq('trabajador_id', filters.trabajador_id)
+        if (filters.estado) query = query.eq('estado', filters.estado)
+
+        const { data, error } = await query
+        return { data: data || [], error }
+    },
+
+    async createVacacion(vacacion) {
+        const { data, error } = await supabase
+            .from('vacaciones')
+            .insert(vacacion)
+            .select()
+            .single()
+        return { data, error }
+    },
+
+    async updateVacacion(id, updates) {
+        const { data, error } = await supabase
+            .from('vacaciones')
+            .update(updates)
+            .eq('id', id)
+            .select()
+            .single()
+        return { data, error }
+    }
+}
+
+// =====================================================
+// SERVICIO DE LICENCIAS
+// =====================================================
+
+export const licenciaService = {
+    async getLicencias(filters = {}) {
+        let query = supabase
+            .from('licencias')
+            .select(`
+                *,
+                trabajador:trabajadores(id, nombre, apellido_paterno, rut)
+            `)
+            .order('fecha_inicio', { ascending: false })
+
+        if (filters.trabajador_id) query = query.eq('trabajador_id', filters.trabajador_id)
+        if (filters.tipo) query = query.eq('tipo', filters.tipo)
+
+        const { data, error } = await query
+        return { data: data || [], error }
+    },
+
+    async createLicencia(licencia) {
+        const { data, error } = await supabase
+            .from('licencias')
+            .insert(licencia)
+            .select()
+            .single()
+        return { data, error }
+    },
+
+    async updateLicencia(id, updates) {
+        const { data, error } = await supabase
+            .from('licencias')
+            .update(updates)
+            .eq('id', id)
+            .select()
+            .single()
+        return { data, error }
+    }
+}
+
+// =====================================================
+// SERVICIO DE CONCEPTOS DE NÓMINA
+// =====================================================
+
+export const conceptoNominaService = {
+    async getConceptos() {
+        const { data, error } = await supabase
+            .from('conceptos_nomina')
+            .select('*')
+            .eq('activo', true)
+            .order('tipo')
+            .order('nombre')
+        return { data: data || [], error }
+    },
+
+    async createConcepto(concepto) {
+        const empresaId = await getEmpresaId()
+        const { data, error } = await supabase
+            .from('conceptos_nomina')
+            .insert({ ...concepto, empresa_id: empresaId })
+            .select()
+            .single()
+        return { data, error }
+    },
+
+    async updateConcepto(id, updates) {
+        const { data, error } = await supabase
+            .from('conceptos_nomina')
+            .update(updates)
+            .eq('id', id)
+            .select()
+            .single()
+        return { data, error }
+    },
+
+    async deleteConcepto(id) {
+        const { error } = await supabase
+            .from('conceptos_nomina')
+            .update({ activo: false })
+            .eq('id', id)
+        return { error }
+    }
+}
+
+// =====================================================
+// SERVICIO DE CENTROS DE COSTO
+// =====================================================
+
+export const centroCostoService = {
+    async getCentrosCosto() {
+        const { data, error } = await supabase
+            .from('centros_costo')
+            .select(`
+                *,
+                responsable:trabajadores(id, nombre, apellido_paterno)
+            `)
+            .eq('activo', true)
+            .order('codigo')
+        return { data: data || [], error }
+    },
+
+    async createCentroCosto(centro) {
+        const empresaId = await getEmpresaId()
+        const { data, error } = await supabase
+            .from('centros_costo')
+            .insert({ ...centro, empresa_id: empresaId })
+            .select()
+            .single()
+        return { data, error }
+    },
+
+    async updateCentroCosto(id, updates) {
+        const { data, error } = await supabase
+            .from('centros_costo')
+            .update(updates)
+            .eq('id', id)
+            .select()
+            .single()
+        return { data, error }
+    },
+
+    async deleteCentroCosto(id) {
+        const { error } = await supabase
+            .from('centros_costo')
+            .update({ activo: false })
+            .eq('id', id)
+        return { error }
+    }
+}
+
+// =====================================================
+// SERVICIO DE PROYECTOS
+// =====================================================
+
+export const proyectoService = {
+    async getProyectos(filters = {}) {
+        let query = supabase
+            .from('proyectos')
+            .select(`
+                *,
+                cliente:clientes(id, nombre),
+                responsable:trabajadores(id, nombre, apellido_paterno),
+                centro_costo:centros_costo(id, nombre, codigo)
+            `)
+            .order('created_at', { ascending: false })
+
+        if (filters.estado) query = query.eq('estado', filters.estado)
+        if (filters.cliente_id) query = query.eq('cliente_id', filters.cliente_id)
+
+        const { data, error } = await query
+        return { data: data || [], error }
+    },
+
+    async createProyecto(proyecto) {
+        const empresaId = await getEmpresaId()
+        const { data, error } = await supabase
+            .from('proyectos')
+            .insert({ ...proyecto, empresa_id: empresaId })
+            .select()
+            .single()
+        return { data, error }
+    },
+
+    async updateProyecto(id, updates) {
+        const { data, error } = await supabase
+            .from('proyectos')
+            .update(updates)
+            .eq('id', id)
+            .select()
+            .single()
+        return { data, error }
+    }
+}
+
+// =====================================================
+// SERVICIO DE PRESUPUESTOS
+// =====================================================
+
+export const presupuestoService = {
+    async getPresupuestos(filters = {}) {
+        let query = supabase
+            .from('presupuestos')
+            .select(`
+                *,
+                categoria:categorias(id, nombre, color),
+                centro_costo:centros_costo(id, nombre, codigo)
+            `)
+            .order('año', { ascending: false })
+            .order('mes', { ascending: false })
+
+        if (filters.año) query = query.eq('año', filters.año)
+        if (filters.categoria_id) query = query.eq('categoria_id', filters.categoria_id)
+
+        const { data, error } = await query
+        return { data: data || [], error }
+    },
+
+    async createPresupuesto(presupuesto) {
+        const empresaId = await getEmpresaId()
+        const { data, error } = await supabase
+            .from('presupuestos')
+            .insert({ ...presupuesto, empresa_id: empresaId })
+            .select()
+            .single()
+        return { data, error }
+    },
+
+    async updatePresupuesto(id, updates) {
+        const { data, error } = await supabase
+            .from('presupuestos')
+            .update(updates)
+            .eq('id', id)
+            .select()
+            .single()
+        return { data, error }
+    }
+}
+
