@@ -10,6 +10,7 @@ const Transacciones = () => {
     const [cuentas, setCuentas] = useState([])
     const [categorias, setCategorias] = useState([])
     const [showModal, setShowModal] = useState(false)
+    const [viewMode, setViewMode] = useState('list') // 'list' o 'grid'
     const [formData, setFormData] = useState({
         tipo: 'gasto',
         monto: '',
@@ -139,16 +140,22 @@ const Transacciones = () => {
     resumen.balance = resumen.ingresos - resumen.gastos
 
     return (
-        <div className="page-transacciones">
+        <div className={`page-transacciones view-mode-${viewMode}`}>
             <header className="page-header">
                 <div>
                     <h1>Transacciones</h1>
                     <p>Gestiona tus ingresos y gastos</p>
                 </div>
-                <Button icon="➕" onClick={() => setShowModal(true)}>
-                    <span className="btn-text-full">Nueva Transacción</span>
-                    <span className="btn-text-short">Nueva</span>
-                </Button>
+                <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center' }}>
+                    <div className="view-toggle">
+                        <button className={viewMode === 'list' ? 'active' : ''} onClick={() => setViewMode('list')} title="Vista lista">📝</button>
+                        <button className={viewMode === 'grid' ? 'active' : ''} onClick={() => setViewMode('grid')} title="Vista grid">📱</button>
+                    </div>
+                    <Button icon="➕" onClick={() => setShowModal(true)}>
+                        <span className="btn-text-full">Nueva Transacción</span>
+                        <span className="btn-text-short">Nueva</span>
+                    </Button>
+                </div>
             </header>
 
             {/* Resumen Cards */}
@@ -167,8 +174,8 @@ const Transacciones = () => {
                 </div>
             </div>
 
-            {/* Vista Desktop - Tabla */}
-            <div className="desktop-view">
+            {/* Vista Lista - Tabla */}
+            <div className="list-view">
                 <Card padding="none">
                     <Table
                         columns={columns}
@@ -180,8 +187,8 @@ const Transacciones = () => {
                 </Card>
             </div>
 
-            {/* Vista Mobile - Cards */}
-            <div className="mobile-view">
+            {/* Vista Grid - Cards */}
+            <div className="grid-view">
                 {loading ? (
                     <div className="loading-state">
                         <div className="loading-spinner" />

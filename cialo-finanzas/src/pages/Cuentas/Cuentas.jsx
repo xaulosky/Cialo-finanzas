@@ -8,6 +8,7 @@ const Cuentas = () => {
     const [loading, setLoading] = useState(true)
     const [cuentas, setCuentas] = useState([])
     const [showModal, setShowModal] = useState(false)
+    const [viewMode, setViewMode] = useState('list')
     const [formData, setFormData] = useState({
         nombre: '',
         tipo: 'banco',
@@ -84,16 +85,22 @@ const Cuentas = () => {
     const saldoTotal = cuentas.reduce((sum, c) => sum + Number(c.saldo_actual || 0), 0)
 
     return (
-        <div className="page-cuentas">
+        <div className={`page-cuentas view-mode-${viewMode}`}>
             <header className="page-header">
                 <div>
                     <h1>Cuentas</h1>
                     <p>Administra tus cuentas bancarias y cajas</p>
                 </div>
-                <Button icon="➕" onClick={() => setShowModal(true)}>
-                    <span className="btn-text-full">Nueva Cuenta</span>
-                    <span className="btn-text-short">Nueva</span>
-                </Button>
+                <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center' }}>
+                    <div className="view-toggle">
+                        <button className={viewMode === 'list' ? 'active' : ''} onClick={() => setViewMode('list')} title="Vista lista">📝</button>
+                        <button className={viewMode === 'grid' ? 'active' : ''} onClick={() => setViewMode('grid')} title="Vista grid">📱</button>
+                    </div>
+                    <Button icon="➕" onClick={() => setShowModal(true)}>
+                        <span className="btn-text-full">Nueva Cuenta</span>
+                        <span className="btn-text-short">Nueva</span>
+                    </Button>
+                </div>
             </header>
 
             {/* Resumen Total */}
@@ -104,15 +111,15 @@ const Cuentas = () => {
                 </div>
             </div>
 
-            {/* Vista Desktop - Tabla */}
-            <div className="desktop-view">
+            {/* Vista Lista - Tabla */}
+            <div className="list-view">
                 <Card padding="none">
                     <Table columns={columns} data={cuentas} loading={loading} emptyMessage="No hay cuentas registradas" emptyIcon="🏦" />
                 </Card>
             </div>
 
-            {/* Vista Mobile - Cards */}
-            <div className="mobile-view">
+            {/* Vista Grid - Cards */}
+            <div className="grid-view">
                 {loading ? (
                     <div className="loading-state">
                         <div className="loading-spinner" />

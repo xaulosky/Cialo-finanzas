@@ -8,6 +8,7 @@ const Proveedores = () => {
     const [loading, setLoading] = useState(true)
     const [proveedores, setProveedores] = useState([])
     const [showModal, setShowModal] = useState(false)
+    const [viewMode, setViewMode] = useState('list')
     const [formData, setFormData] = useState({
         rut: '',
         nombre: '',
@@ -67,16 +68,22 @@ const Proveedores = () => {
     ]
 
     return (
-        <div className="page-proveedores">
+        <div className={`page-proveedores view-mode-${viewMode}`}>
             <header className="page-header">
                 <div>
                     <h1>Proveedores</h1>
                     <p>Gestiona tus proveedores y acreedores</p>
                 </div>
-                <Button icon="➕" onClick={() => setShowModal(true)}>
-                    <span className="btn-text-full">Nuevo Proveedor</span>
-                    <span className="btn-text-short">Nuevo</span>
-                </Button>
+                <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center' }}>
+                    <div className="view-toggle">
+                        <button className={viewMode === 'list' ? 'active' : ''} onClick={() => setViewMode('list')} title="Vista lista">📝</button>
+                        <button className={viewMode === 'grid' ? 'active' : ''} onClick={() => setViewMode('grid')} title="Vista grid">📱</button>
+                    </div>
+                    <Button icon="➕" onClick={() => setShowModal(true)}>
+                        <span className="btn-text-full">Nuevo Proveedor</span>
+                        <span className="btn-text-short">Nuevo</span>
+                    </Button>
+                </div>
             </header>
 
             {/* Total */}
@@ -85,8 +92,8 @@ const Proveedores = () => {
                 <span className="total-text">{proveedores.length} proveedores registrados</span>
             </div>
 
-            {/* Vista Desktop - Tabla */}
-            <div className="desktop-view">
+            {/* Vista Lista - Tabla */}
+            <div className="list-view">
                 <Card padding="none">
                     <Table
                         columns={columns}
@@ -98,8 +105,8 @@ const Proveedores = () => {
                 </Card>
             </div>
 
-            {/* Vista Mobile - Cards */}
-            <div className="mobile-view">
+            {/* Vista Grid - Cards */}
+            <div className="grid-view">
                 {loading ? (
                     <div className="loading-state">
                         <div className="loading-spinner" />

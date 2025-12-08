@@ -13,6 +13,7 @@ const Trabajadores = () => {
     const [editing, setEditing] = useState(null)
     const [deleting, setDeleting] = useState(null)
     const [mostrarInactivos, setMostrarInactivos] = useState(false)
+    const [viewMode, setViewMode] = useState('list')
     const [formData, setFormData] = useState({
         rut: '',
         nombre: '',
@@ -190,16 +191,22 @@ const Trabajadores = () => {
     ]
 
     return (
-        <div className="page-departamentos">
+        <div className={`page-departamentos view-mode-${viewMode}`}>
             <header className="page-header">
                 <div>
                     <h1>Trabajadores</h1>
                     <p>Gestiona tu equipo de trabajo</p>
                 </div>
-                <Button icon="➕" onClick={() => { resetForm(); setShowModal(true) }}>
-                    <span className="btn-text-full">Nuevo Trabajador</span>
-                    <span className="btn-text-short">Nuevo</span>
-                </Button>
+                <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center' }}>
+                    <div className="view-toggle">
+                        <button className={viewMode === 'list' ? 'active' : ''} onClick={() => setViewMode('list')} title="Vista lista">📝</button>
+                        <button className={viewMode === 'grid' ? 'active' : ''} onClick={() => setViewMode('grid')} title="Vista grid">📱</button>
+                    </div>
+                    <Button icon="➕" onClick={() => { resetForm(); setShowModal(true) }}>
+                        <span className="btn-text-full">Nuevo Trabajador</span>
+                        <span className="btn-text-short">Nuevo</span>
+                    </Button>
+                </div>
             </header>
 
             <div className="total-banner" style={{ justifyContent: 'space-between' }}>
@@ -231,13 +238,13 @@ const Trabajadores = () => {
                 </button>
             </div>
 
-            <div className="desktop-view">
+            <div className="list-view">
                 <Card padding="none">
                     <Table columns={columns} data={trabajadores} loading={loading} emptyMessage="No hay trabajadores registrados" emptyIcon="👷" />
                 </Card>
             </div>
 
-            <div className="mobile-view">
+            <div className="grid-view">
                 {loading ? (
                     <div className="loading-state"><p>Cargando...</p></div>
                 ) : trabajadores.length === 0 ? (
